@@ -1,0 +1,39 @@
+version: "3.2"
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+      - ashland-internal
+
+#  # Gallatin Service
+#  gallatin:
+#    build: .
+#    container_name: task-manager-gallatin_linux_amd64
+#    environment:
+#      - CONFIG_PATH=/app/config.yaml
+#    depends_on:
+#      - postgres-service
+#      - cache
+#      - rabbitmq
+#    ports:
+#      - "50051:50051"
+#    volumes:
+#      - ./config.yaml:/app/config.yaml
+#      - ./CreateDB.sql:/docker-entrypoint-initdb.d/init.sql
+#    networks:
+#      - gallatin-internal
+
+volumes:
+  pgdata:
+  cache:
+    driver: local
+
+networks:
+  ashland-internal:

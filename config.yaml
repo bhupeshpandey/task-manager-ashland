@@ -1,0 +1,23 @@
+prometheus:
+  port: 8080
+  host: "localhost"
+
+messageQueue:
+  type: "RABBITMQ"  # Can be "RABBITMQ" or "KAFKA"
+  rabbitmq:
+    url: "amqp://guest:guest@localhost:5672/"
+    exchange: "amq.direct"
+    queue: "data-queue"
+    routing_key: "data-routing-key"
+
+  # Uncomment the following lines and comment out the RabbitMQ section to use Kafka instead.
+  # kafka:
+  #   brokers:
+  #     - "localhost:9092"
+  #   topic: "my_topic"
+  #   group_id: "my_group"
+
+logging:
+  type: "zap"
+  environment: "dev"
+  logLevel: "info"
