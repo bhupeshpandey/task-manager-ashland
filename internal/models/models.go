@@ -1,6 +1,23 @@
 package models
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"time"
+)
+
+type Event struct {
+	Name string      `json:"name"`
+	Data interface{} `json:"data"`
+}
+
+type Task struct {
+	Id          string    `json:"id"`
+	ParentID    string    `json:"parent_id,omitempty"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
 
 type MessageQueueConfig struct {
 	// MessageQueueConfig represents the message queue-related configuration

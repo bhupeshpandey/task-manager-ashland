@@ -1,6 +1,7 @@
 package msgqueue
 
 import (
+	"encoding/json"
 	. "github.com/bhupeshpandey/task-manager-ashland/internal/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -19,10 +20,10 @@ type rabbitMQ struct {
 }
 
 var (
-	rmqMessagesTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "rabbitmq_total_messages",
+	rmqMessagesTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "rabbitmq_total_messages_received",
 		Help: "Total number of Rabbit MQ messages received",
-	})
+	}, []string{"TaskEvent", "TaskId"})
 )
 
 func newRabbitMQ(config *RabbitMQConfig, logger Logger, registry *prometheus.Registry) (ReceiverMessageQueue, error) {
@@ -99,9 +100,33 @@ func (r *rabbitMQ) ReceiveMessages(wg *sync.WaitGroup) error {
 	}
 
 	for data := range deliveryChannel {
-		rmqMessagesTotal.Inc()
+		//rmqMessagesTotal.With(prometheus.Labels{
+		//	"RequestType": "TaskCreated",
+		//}).Inc()
 		body := data.Body
 		strBody := string(body)
+		var event Event
+		err = json.Unmarshal(body, &event)
+		if err != nil {
+			return err
+		}
+		var labelValues = make([]string, 2)
+		switch event.Data.(type) {
+		//case Task:
+
+		//labelValues = append(labelValues, event.Name, event.Data.(*models.Task).Id)
+		case string:
+			labelValues[0] = event.Name
+			labelValues[1] = event.Data.(string)
+		default:
+			labelValues[0] = event.Name
+			labelValues[1] = event.Data.(map[string]interface{})["id"].(string)
+		}
+
+		values := rmqMessagesTotal.WithLabelValues(labelValues...)
+		if values != nil {
+			values.Inc()
+		}
 		r.logger.Log(InfoLevel, "Received Data ", strBody)
 	}
 
